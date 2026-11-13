@@ -1,4 +1,7 @@
-# LCEReborn
+# LCEReborn (forked from [LCEReborn/LCEReborn](https://github.com/LCEReborn/LCEReborn) by [Jacobwasbeast](https://github.com/Jacobwasbeast))
+
+Disclaimer: Consider the following the same as a game launcher or runner.
+Without a copy of the original game, you won't be able to play it.
 
 Reconstructed C++ source for Minecraft: Wii U Edition, the 4J Studios
 Legacy Console Edition codebase, and a native PC version built from it.
@@ -9,10 +12,6 @@ against that executable. Every file is hand-authored text rather than raw
 tool output, and the repository contains no binaries, assets, symbol
 tables, disassembly or decompiler output. See `docs/provenance.md` for how
 the source is made.
-
-All of the code is written by AI agents. Today Claude coordinates Claude
-Opus 5.5 worker agents; earlier phases had the dispatchers Sol and Fable
-hand class families to Luna and Opus 5 workers. See `docs/overview.md`.
 
 ## Playing on PC
 
