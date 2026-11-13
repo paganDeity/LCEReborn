@@ -1,0 +1,258 @@
+#include "game/network/ServerConnectionListener.hpp"
+#include "game/network/ServerGamePacketListenerImpl.hpp"
+#include "game/network/Connection.hpp"
+#include "game/network/ClientboundLoginPacket.hpp"
+#include "game/network/DisconnectPacket.hpp"
+#include "game/server/MinecraftServer.hpp"
+#include "game/server/ServerAccess.hpp"
+#include "game/server/ServerLevel.hpp"
+#include "game/world/generation/PlayerList.hpp"
+#include "game/server/ServerPlayer.hpp"
+#include "game/world/generation/Player.hpp"
+#include "game/core/HumanoidArm.hpp"
+#include "game/core/CConsoleMinecraftApp.hpp"
+#include "game/core/CMinecraftApp.hpp"
+#include "game/core/StringConversion.hpp"
+#include "game/core/Minecraft.hpp"
+#include "game/minigame/MiniGameDef.hpp"
+#include "game/network/CGameNetworkManager.hpp"
+#include "game/network/ClientboundPreLoginPacket.hpp"
+#include "game/network/ServerboundPreLoginPacket.hpp"
+#include "game/network/INetworkPlayer.hpp"
+#include "game/world/LevelData.hpp"
+#include "platform/CProfile.hpp"
+#include "platform/CStorage.hpp"
+#include <cstring>
+#include <vector>
+
+#if LCE_PLATFORM_PC
+#include "platform/pc/Log.hpp"
+
+namespace
+{
+const Logger sAccessLog("Access");
+
+void LogAccessRefusal(const std::wstring& name, const std::wstring& id, const wchar_t* why, const std::wstring& reason)
+{
+    sAccessLog.WriteText(LogLevel::Info, "refused " + convWstringToString(name) + " (" + convWstringToString(id) + "): "
+                                             + convWstringToString(why)
+                                             + (reason.empty() ? std::string() : " (" + convWstringToString(reason) + ")"));
+}
+}
+#endif
+
+ServerConnectionListener::ServerConnectionListener(MinecraftServer* server, Socket* socket, const std::wstring& name)
+    : PacketListener()
+{
+    m_disconnected = false;
+    m_tickCount = 0;
+    m_name = L"";
+    m_acceptedLogin = boost::shared_ptr<ClientboundLoginPacket>();
+    m_loginKey = L"";
+    m_server = server;
+    m_connection = new Connection(socket, name, this);
+    m_connection->m_fakeLag = 0;
+}
+
+ServerConnectionListener::~ServerConnectionListener()
+{
+    delete m_connection;
+}
+
+void ServerConnectionListener::disconnect(DisconnectPacket::eDisconnectReason reason)
+{
+    m_connection->send(boost::shared_ptr<DisconnectPacket>(new DisconnectPacket(reason)));
+    m_connection->sendAndQuit();
+    m_disconnected = true;
+}
+
+void ServerConnectionListener::tick()
+{
+    if (m_acceptedLogin != NULL)
+    {
+        handleAcceptedLogin(m_acceptedLogin);
+        m_acceptedLogin = boost::shared_ptr<ClientboundLoginPacket>();
+    }
+
+    if (m_tickCount++ == 600)
+    {
+        disconnect(DisconnectPacket::eDisconnectReason_LoginTooLong);
+    }
+    else
+    {
+        m_connection->tick();
+    }
+}
+
+void ServerConnectionListener::sendPreLoginResponse()
+{
+    PlayerUID* playerUids = new PlayerUID[8];
+    unsigned int playerCount = 0;
+    unsigned int hostPlayerIndex = 0;
+    unsigned int guestFlags = 0;
+    char uniqueMapName[16];
+    std::memset(uniqueMapName, 0, 14);
+    gStorage->GetSaveUniqueFilename(uniqueMapName);
+
+    std::vector<boost::shared_ptr<ServerPlayer> >* players = gMinecraftServer->getPlayers()->getPlayers();
+    for (std::vector<boost::shared_ptr<ServerPlayer> >::iterator it = players->begin(); it != players->end(); ++it)
+    {
+        boost::shared_ptr<ServerPlayer> serverPlayer = *it;
+        if (serverPlayer != NULL && serverPlayer->mConnection->mPlayerUID != PlayerUID(0)
+            && serverPlayer->mConnection->mOldPlayerUID != PlayerUID(0))
+        {
+            if (serverPlayer->mConnection->mFriendsOnly)
+                guestFlags = guestFlags | ((1 << playerCount) & 0xFF);
+            playerUids[playerCount] = serverPlayer->mConnection->mOldPlayerUID;
+            if (serverPlayer->mConnection->getNetworkPlayer() != NULL)
+            {
+                if (serverPlayer->mConnection->getNetworkPlayer()->IsHost())
+                    hostPlayerIndex = playerCount;
+            }
+            ++playerCount;
+        }
+    }
+
+    std::wstring accountName(L"-");
+    accountName = convStringToWstring(std::string(gProfile->GetNetworkAccountID()));
+
+    m_connection->send(boost::shared_ptr<ClientboundPreLoginPacket>(new ClientboundPreLoginPacket(
+        accountName, playerUids, playerCount, guestFlags, m_server->ugcPlayersVersion, uniqueMapName,
+        gApp.GetGameHostOption(eGameHostOption_All),
+        Minecraft::GetInstance()->GetMiniGame()->GetHostOption(eCustomGameModeHostOption_All), hostPlayerIndex,
+        m_server->getGameModeId(), CGameNetworkManager::sInstance.IsMatchmakingEnabled(),
+        Minecraft::GetInstance()->GetMiniGame()->GetId())));
+}
+
+void ServerConnectionListener::handlePreLogin(boost::shared_ptr<ServerboundPreLoginPacket> packet)
+{
+    if (packet->protocolVersion != 0x881)
+    {
+        if (packet->protocolVersion > 0x881)
+        {
+            disconnect(DisconnectPacket::eDisconnectReason_HostOutOfDate);
+            return;
+        }
+        disconnect(DisconnectPacket::eDisconnectReason_ClientOutOfDate);
+        return;
+    }
+
+    m_name = packet->name;
+    sendPreLoginResponse();
+}
+
+void ServerConnectionListener::handleLogin(boost::shared_ptr<ClientboundLoginPacket> packet)
+{
+    if (packet->mEntityId != 316)
+    {
+        if (packet->mEntityId > 316)
+        {
+            disconnect(DisconnectPacket::eDisconnectReason_HostOutOfDate);
+            return;
+        }
+        disconnect(DisconnectPacket::eDisconnectReason_ClientOutOfDate);
+        return;
+    }
+
+    if (m_server->getPlayers()->isXuidBanned(packet->mPlayerUID2))
+    {
+        disconnect(DisconnectPacket::eDisconnectReason_BannedByHost);
+        return;
+    }
+
+    PlayerUID admittedUid = packet->mPlayerUID;
+    if (admittedUid == PlayerUID(0))
+        admittedUid = packet->mPlayerUID2;
+    std::wstring banReason;
+    const ServerAccess::EVerdict verdict =
+        ServerAccess::Admit(admittedUid.toString(), m_name, m_server->getPlayers()->getPlayerCount(), &banReason);
+    if (verdict != ServerAccess::eVerdict_Admitted)
+    {
+        static const wchar_t* const why[] = {L"", L"banned", L"not on the whitelist", L"the server is full"};
+        static const DisconnectPacket::eDisconnectReason sent[] = {
+            DisconnectPacket::eDisconnectReason_None, DisconnectPacket::eDisconnectReason_BannedByHost,
+            DisconnectPacket::eDisconnectReason_InviteOnlyGame, DisconnectPacket::eDisconnectReason_GameFull};
+#if LCE_PLATFORM_PC
+        LogAccessRefusal(m_name, admittedUid.toString(), why[verdict], banReason);
+#endif
+        disconnect(sent[verdict]);
+        return;
+    }
+
+    if (!ClientboundLoginPacket::hasCapability(packet->mUnknownValue3,
+                                               ClientboundLoginPacket::LCE_CAPABILITY_WIDE_COORDINATES)
+        && m_server->getLevel(0)->getLevelData()->getXZSize() > LevelData::CLASSIC_WIDTH)
+    {
+        disconnect(DisconnectPacket::eDisconnectReason_ClientOutOfDate);
+        return;
+    }
+
+    handleAcceptedLogin(packet);
+}
+
+void ServerConnectionListener::handleAcceptedLogin(boost::shared_ptr<ClientboundLoginPacket> packet)
+{
+    if (packet->mViewDistance != m_server->ugcPlayersVersion)
+    {
+        sendPreLoginResponse();
+        return;
+    }
+
+    PlayerUID uid = packet->mPlayerUID;
+    if (uid == PlayerUID(0))
+        uid = packet->mPlayerUID2;
+
+    boost::shared_ptr<ServerPlayer> player = m_server->getPlayers()->getPlayerForLogin(this, m_name, uid,
+                                                                                       packet->mPlayerUID2);
+    if (player)
+    {
+        player->setMainArm(packet->mHasAchievements ? HumanoidArm::LEFT : HumanoidArm::RIGHT);
+        m_server->getPlayers()->placeNewPlayer(m_connection, player, packet);
+        m_connection = 0;
+    }
+    if (packet->mDifficulty != -1)
+        gApp.SetFirstMiniGameType(static_cast<EMiniGameId>(packet->mDifficulty));
+    m_disconnected = true;
+}
+
+void ServerConnectionListener::onDisconnect(DisconnectPacket::eDisconnectReason, void*)
+{
+    m_disconnected = true;
+}
+
+void ServerConnectionListener::handleGetInfo(boost::shared_ptr<GetInfoPacket>)
+{
+    m_connection->send(
+        boost::shared_ptr<DisconnectPacket>(new DisconnectPacket(DisconnectPacket::eDisconnectReason_GameFull)));
+    m_connection->sendAndQuit();
+    m_disconnected = true;
+}
+
+void ServerConnectionListener::handleKeepAlive(boost::shared_ptr<ServerboundKeepAlivePacket>)
+{
+}
+
+void ServerConnectionListener::onUnhandledPacket(boost::shared_ptr<Packet>)
+{
+    disconnect(DisconnectPacket::eDisconnectReason_UnexpectedPacket);
+}
+
+void ServerConnectionListener::send(boost::shared_ptr<Packet> packet)
+{
+    m_connection->send(packet);
+}
+
+bool ServerConnectionListener::isServerPacketListener()
+{
+    return true;
+}
+
+bool ServerConnectionListener::isDisconnected()
+{
+    return m_disconnected;
+}
+
+std::wstring ServerConnectionListener::getName()
+{
+    return m_name;
+}

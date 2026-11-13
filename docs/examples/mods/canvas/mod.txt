@@ -1,0 +1,5 @@
+id=canvas
+name=Canvas drawing
+version=1.0
+api=1
+entry=main.lua

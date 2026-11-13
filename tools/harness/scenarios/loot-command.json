@@ -1,0 +1,135 @@
+{
+ "description": "/loot give, insert and spawn from a built-in loot table",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "give @p minecraft:stick",
+   "expect": "Given"
+  },
+  {
+   "cmd": "clear @p",
+   "expect": "Cleared"
+  },
+  {
+   "cmd": "loot give @p loot gameplay/fishing",
+   "expect": "Gave [1-9]\\d* items? from the loot table"
+  },
+  {
+   "cmd": "loot give @p loot chests/simple_dungeon",
+   "expect": "Gave [1-9]\\d* items? from the loot table"
+  },
+  {
+   "cmd": "loot give @p loot minecraft:chests/simple_dungeon",
+   "expect": "Gave"
+  },
+  {
+   "cmd": "loot give @p loot nonsense/table",
+   "expect_error": "Unknown loot table"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:chest",
+   "expect": "placed"
+  },
+  {
+   "cmd": "loot insert ~ ~3 ~ loot chests/simple_dungeon",
+   "expect": "Inserted [1-9]\\d* items?"
+  },
+  {
+   "cmd": "data get block ~ ~3 ~ Items",
+   "expect": "Slot:"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "loot insert ~ ~3 ~ loot chests/simple_dungeon",
+   "expect_error": "no container"
+  },
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "loot replace entity @p slot.hotbar.0 3 loot chests/simple_dungeon",
+   "expect": "Replaced [1-3] slots? with loot"
+  },
+  {
+   "cmd": "loot replace entity @p slot.bogus.0 loot chests/simple_dungeon",
+   "expect": "No slot of that name"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:chest",
+   "expect": "placed"
+  },
+  {
+   "cmd": "loot replace block ~ ~3 ~ slot.container.2 2 loot chests/simple_dungeon",
+   "expect": "Replaced [1-2] slots? with loot"
+  },
+  {
+   "cmd": "data get block ~ ~3 ~ Items",
+   "expect": "Slot:2b"
+  },
+  {
+   "cmd": "loot spawn ~ ~5 ~ loot chests/simple_dungeon",
+   "expect": "Dropped [1-9]\\d* items?"
+  },
+  {
+   "cmd": "summon minecraft:cow ~ ~5 ~",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "loot give @p kill @e[type=cow,limit=1]",
+   "expect": "Gave|The loot table gave nothing"
+  },
+  {
+   "cmd": "loot give @p kill @e[type=cow,tag=nothing_has_this]",
+   "expect_error": "No (entity|mob) was found"
+  },
+  {
+   "cmd": "summon minecraft:armor_stand ~ ~5 ~",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "loot give @p kill @e[type=armor_stand,limit=1]",
+   "expect_error": "No mob was found"
+  },
+  {
+   "cmd": "kill @e[type=armor_stand]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "kill @e[type=cow]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "kill @e[type=item]",
+   "expect": "Killed"
+  }
+ ]
+}

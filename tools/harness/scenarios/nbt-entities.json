@@ -1,0 +1,72 @@
+{
+ "description": "Entity NBT in 1.14 syntax: Passengers, Glowing, Tags and CustomName through summon and data",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "execute as @p at @s run tp @s ~ 200 ~"
+  },
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "execute as @p at @s run tp @s ~ 200 ~"
+  },
+  {
+   "cmd": "execute as @p at @s run summon pig ~ ~ ~ {Glowing:1b,Tags:[\"mount\"],CustomName:\"Ride\",Passengers:[{id:\"minecraft:chicken\",Glowing:1b,Tags:[\"rider\"]}]}"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=mount,limit=1] Glowing",
+   "expect": ": 1b$"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=mount,limit=1] Tags",
+   "expect": "mount"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=mount,limit=1] Passengers[0].id",
+   "expect": "chicken"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=mount,limit=1] Passengers[0].Tags[0]",
+   "expect": "rider"
+  },
+  {
+   "cmd": "data modify entity @e[type=pig,tag=mount,limit=1] NoGravity set value 1b",
+   "expect": "modified"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=mount,limit=1] NoGravity",
+   "expect": ": 1b$"
+  },
+  {
+   "cmd": "kill @e[type=pig,tag=mount]"
+  },
+  {
+   "cmd": "kill @e[type=chicken,tag=rider]"
+  },
+  {
+   "cmd": "execute as @p at @s run summon pig ~ ~ ~ {CustomName:'Say \\\"hi\\\"',Tags:['single','it\\'s']}"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=single,limit=1] Tags",
+   "expect": "single"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=single,limit=1] CustomName",
+   "expect": "hi"
+  },
+  {
+   "cmd": "kill @e[type=pig,tag=single]"
+  }
+ ]
+}

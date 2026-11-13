@@ -1,0 +1,75 @@
+{
+ "description": "Spawn eggs: one naming a pig spawns one, and one naming no creature used on that pig does nothing instead of crashing the server (an unknown registry key read as garbage)",
+ "world": {
+  "seed": "11",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 248 149 228 256 152 240 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 248 149 228 256 149 240 glass",
+   "expect": "filled"
+  },
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "give @p spawn_egg{EntityTag:{id:\"minecraft:pig\"}} 1",
+   "expect": "Spawn Pig"
+  },
+  {
+   "cmd": "give @p spawn_egg 1 90",
+   "expect": "Given"
+  },
+  {
+   "cmd": "tp @p 252.5 150 231.5 0 80",
+   "expect": "Teleported"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "key": "1"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 20
+  },
+  {
+   "key": "2"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "kill @e[type=pig,x=252.5,y=150,z=231.5,distance=..4]",
+   "expect": "Killed Pig"
+  },
+  {
+   "cmd": "fill 248 149 228 256 149 240 air",
+   "expect": "filled"
+  },
+  {
+   "cmd": "tp @p 262.5 142 244.5 0 30",
+   "expect": "Teleported"
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+{
+  "description": "NBT path filters select, modify and remove the matching data, and list patterns match as subsets",
+  "world": {"seed": "12345", "mode": "creative"},
+  "steps": [
+    {"cmd": "setblock 56 100 263 chest{Items:[{Slot:0b,id:\"minecraft:stone\",Count:5b},{Slot:1b,id:\"minecraft:dirt\",Count:3b},{Slot:2b,id:\"minecraft:stone\",Count:1b,tag:{display:{Name:\"x\"}}}]} 0 replace", "expect": "Block placed"},
+    {"cmd": "data get block 56 100 263 Items[{id:\"minecraft:dirt\"}].Count", "expect": ": 3b$"},
+    {"cmd": "data get block 56 100 263 Items[{id:\"minecraft:stone\"}]", "expect_error": "more than one value"},
+    {"cmd": "data get block 56 100 263 Items[2].tag{display:{Name:\"x\"}}", "expect": ": \\{display:\\{Name:\"x\"\\}\\}$"},
+    {"cmd": "data get block 56 100 263 {Items:[{Slot:1b}]}.Items[1].id", "expect": ": \"minecraft:dirt\"$"},
+    {"cmd": "data get block 56 100 263 Items[1]{Count:4b}", "expect_error": "filter must follow a name"},
+    {"cmd": "data get block 56 100 263 Items[{nope:1b}]", "expect_error": "found no data"},
+    {"cmd": "data modify block 56 100 263 Items[{id:\"minecraft:stone\"}].Count set value 9b", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].Count", "expect": ": 9b$"},
+    {"cmd": "data get block 56 100 263 Items[1].Count", "expect": ": 3b$"},
+    {"cmd": "data get block 56 100 263 Items[2].Count", "expect": ": 9b$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag set value {L:[\"a\",\"b\",\"c\"]}", "expect": "modified"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.L[] set value \"z\"", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.L", "expect": ": \\[\"z\",\"z\",\"z\"\\]$"},
+    {"cmd": "data remove block 56 100 263 Items[{id:\"minecraft:stone\"}]", "expect": "removed 2 values"},
+    {"cmd": "data get block 56 100 263 Items[0].id", "expect": ": \"minecraft:dirt\"$"},
+    {"cmd": "data remove block 56 100 263 {Items:[]}", "expect_error": "cannot be replaced or removed"},
+    {"cmd": "setblock 56 100 263 air 0 replace", "expect": "Block placed"}
+  ]
+}

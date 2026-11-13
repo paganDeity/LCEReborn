@@ -1,0 +1,25 @@
+{
+ "description": "saving a chunk that holds a mod block records the mod block palette capability in level.dat; this scenario's world is saved, so it has a world of its own",
+ "world": {
+  "seed": "2026",
+  "mode": "creative"
+ },
+ "mods": [
+  "blocks"
+ ],
+ "steps": [
+  {
+   "cmd": "execute as @p at @s run setblock ~2 ~ ~ blocks:crate"
+  },
+  {
+   "save": true
+  },
+  {
+   "wait": 60
+  },
+  {
+   "cmd": "worldcaps",
+   "expect": "capabilities [23]$"
+  }
+ ]
+}

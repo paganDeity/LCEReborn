@@ -1,0 +1,78 @@
+{
+ "description": "1.13 selector arguments: limit, sort, tag, nbt, name against custom names, distance and the entity id in data",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "execute as @p at @s run tp @s ~ 200 ~"
+  },
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "execute as @p at @s run tp @s ~ 200 ~"
+  },
+  {
+   "cmd": "execute as @p at @s run summon pig ~2 ~ ~ {Tags:[\"red\"],CustomName:\"Bob\",NoAI:1b}"
+  },
+  {
+   "cmd": "execute as @p at @s run summon pig ~5 ~ ~ {Tags:[\"blue\"],NoAI:1b}"
+  },
+  {
+   "cmd": "execute as @p at @s run summon cow ~8 ~ ~ {Tags:[\"herd\"],NoAI:1b}"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=red,limit=1] id",
+   "expect": "\"minecraft:pig\""
+  },
+  {
+   "cmd": "data get entity @e[tag=red,limit=1] Tags",
+   "expect": "red"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=!red,limit=1] Tags",
+   "expect": "blue"
+  },
+  {
+   "cmd": "data get entity @e[nbt={Tags:[\"blue\"]},limit=1] Tags",
+   "expect": "blue"
+  },
+  {
+   "cmd": "data get entity @e[name=Bob,limit=1] CustomName",
+   "expect": "Bob"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=!blue,sort=nearest,limit=1] Tags",
+   "expect": "red"
+  },
+  {
+   "cmd": "data get entity @e[type=pig,tag=blue,sort=furthest,limit=1] Tags",
+   "expect": "blue"
+  },
+  {
+   "cmd": "data get entity @e[tag=herd,limit=1] id",
+   "expect": "minecraft:cow"
+  },
+  {
+   "cmd": "kill @e[type=pig,tag=blue]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "kill @e[type=pig,tag=red]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "kill @e[tag=herd]",
+   "expect": "Killed"
+  }
+ ]
+}

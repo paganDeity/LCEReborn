@@ -1,0 +1,262 @@
+# The mod API: the one description of what mods can call and what they can hook.
+# tools/hooks/hookgen.py turns it into the Lua and WebAssembly bindings, the game's
+# dispatch, the SDK header and docs/modding-api.md. A call is a method of a game class or a loader class (`expose`, with `alias` to name it for Lua);
+# nothing here declares a function or has host code. After a change run `python tools/hooks/hookgen.py generate`.
+
+api 1
+
+handle entity  "A living thing in the world, a player included." type boost::shared_ptr<Entity>
+handle level   "One dimension of the world." type Level*
+handle chunk   "A 16 by 16 column of the world, while the game generates it." type LevelChunk*
+handle primer  "The blocks of a chunk that a world generator is building, in chunk coordinates: 0 to 15 across and 0 up to its height." type ChunkPrimer*
+handle surface "A picture you own: a grid of pixels you write, which the game can draw anywhere it lets you draw. It lives until you destroy it or your mod is unloaded." type boost::shared_ptr<ModSurface>
+handle stream  "A channel to the speakers that you feed with sound. Sound you queue plays in order. It lives until you close it or your mod is unloaded." type boost::shared_ptr<ModAudioStream>
+handle canvas  "The world, while it is being drawn. Positions are world coordinates; the game places them relative to the camera." type ModHandles::WorldInfo
+handle painter "The game's own menu kit, drawing in the interface pixels of the gui it came from: panels, buttons, sliders, boxes, scroll bars and text, in the style of the game's menus. It is valid until the next gui.painter call." type MenuPainter*
+handle gui     "The heads-up display, while it is being drawn. Drawing in pixels of the interface scale." type ModHandles::GuiInfo
+
+
+
+
+
+
+
+
+
+
+
+
+hook sound_start(sound: sound, x: float, y: float, z: float, volume: float, pitch: float, kind: int) provider
+  "The game asks for a sound to be heard (kind 0 in the world, 1 on the interface, 2 music or a record). When a mod listens, the game's sound engine is replaced by the mod: nothing is played unless the mod plays it, with audio.open and sound.decode."
+
+hook generate_terrain(level: level, primer: primer, chunk_x: int, chunk_z: int) provider
+  "Make the terrain of a chunk. When a mod listens, the dimension uses this instead of the game's generator: the chunk starts empty and the mod fills it with primer:set_block. Structures, caves and decoration are the mod's to make; the game still lights the chunk and sets its biomes from the biome source."
+
+hook check_light(level: level, x: int, y: int, z: int, layer: light_layer) provider
+  "The light at a position may have changed (a block was placed or removed, a chunk loaded; layer 15 sky, 0 block, the game's own numbers). When a mod listens, the world uses this instead of the game's light engine: read the surroundings with level:block_at and level:getBrightness, and store the result with level:set_light. Propagating to neighbours is the mod's to do."
+
+hook wire_update(level: level, x: int, y: int, z: int) provider
+  "A redstone wire was placed, removed or had a neighbour change. When a mod listens, the world uses this instead of the game's wire logic: work out the power of the wire network with level:wire_power, level:signal_at and level:conducts, write it with level:set_wire_power, then call level:update_wire_neighbors on what changed. A mod can do the whole network at once, which is how a faster redstone mod works."
+
+hook packet_encode(server: bool, loopback: bool, id: int, data: bytes mut) provider
+  "A packet is about to be written to a connection. data holds its bytes in the game's own format; change them into whatever your protocol puts on the wire (compress, encrypt, rewrite, reframe) and the game sends your bytes with a length in front. Both ends must run the same mod, and packet_decode must undo it. server is true when the game is the server; loopback is true for the connection between the host and its own player in the same process, where a mod usually passes the bytes through; id is the game's packet number."
+hook packet_decode(server: bool, loopback: bool, data: bytes mut) provider
+  "A packet's bytes arrived on a connection. data holds what the other side's packet_encode produced; turn it back into the game's own packet bytes (a packet number then its fields) and the game reads it as usual. loopback is true for the host's own player, and is the same on both ends of a connection."
+
+hook chunk_store(world: string, dimension: int, x: int, z: int, data: bytes) provider
+  "A chunk is to be saved. data is the chunk in the game's own serialised form (uncompressed); keep it wherever your format keeps chunks, for example with file.write. When a mod listens, the game does not write its region files at all. world names the world, dimension is 0 overworld, -1 nether, 1 end, and x and z are the chunk's position."
+hook chunk_fetch(world: string, dimension: int, x: int, z: int, data: bytes mut, found: bool mut) provider
+  "A chunk is to be loaded. Set data to the bytes chunk_store was given for it (or bytes in the game's format that you made) and found to true; leave found false and the game generates the chunk."
+
+
+override Block from game/world/block/Block.hpp to game/world/block/ModBlock_generated.hpp self block
+override Item from game/item/Item.hpp to game/item/ModItem_generated.hpp self item
+override Entity from game/entity/mob/Entity.hpp,game/entity/mob/LivingEntity.hpp,game/entity/mob/Mob.hpp to game/entity/mob/ModEntity_generated.hpp self entity shared
+
+expose Level from game/world/Level.hpp
+expose Block from game/world/block/Block.hpp
+expose Blocks from game/world/block/Blocks.hpp
+expose RedStoneWireBlock from game/world/block/RedStoneWireBlock.hpp
+expose BlockState from game/world/block/BlockState.hpp,game/world/block/BlockProperties.hpp,game/world/block/BlockBehaviours.hpp
+expose Item from game/item/Item.hpp
+owned ItemInstance
+shared_cast BlockEntity to Container
+expose Packet from game/network/Packet.hpp
+owned ClientboundCustomPayloadPacket
+owned ServerboundCustomPayloadPacket
+shared_cast ClientboundCustomPayloadPacket to Packet
+shared_cast ServerboundCustomPayloadPacket to Packet
+expose ClientboundCustomPayloadPacket from game/network/ClientboundCustomPayloadPacket.hpp
+expose ServerboundCustomPayloadPacket from game/network/ServerboundCustomPayloadPacket.hpp
+expose ServerGamePacketListenerImpl from game/network/ServerGamePacketListenerImpl.hpp
+intercept ClientPacketListener from game/network/ClientPacketListener.cpp only handleCustomPayload
+expose ClientPacketListener from game/network/ClientPacketListener.hpp
+expose Container from game/item/Container.hpp
+expose ItemInstance from game/item/ItemInstance.hpp
+expose ModItemNames from game/core/ModItemNames.hpp
+expose Entity from game/entity/mob/Entity.hpp
+expose LivingEntity from game/entity/mob/LivingEntity.hpp
+expose Mob from game/entity/mob/Mob.hpp
+expose Player from game/world/generation/Player.hpp
+intercept Player from game/world/generation/Player.cpp only -
+expose Animal from game/entity/mob/Animal.hpp
+expose Monster from game/entity/mob/Monster.hpp
+expose Biome from game/world/biome/Biome.hpp
+expose Material from game/world/block/Material.hpp
+expose Vec3 from game/util/Vec3.hpp
+expose AABB from game/util/AABB.hpp
+expose Random from game/util/Random.hpp
+expose PathNavigation from game/entity/ai/PathNavigation.hpp
+expose EntityType from game/core/EntityType.hpp
+expose TargetSelector from game/command/TargetSelector.hpp
+expose ChatCommand from game/command/ChatCommand.hpp
+expose ChatCommands from game/command/ChatCommands.hpp
+expose SoundEvents from game/client/audio/SoundEvents.hpp
+expose BlockPathTypes from game/world/block/BlockPathTypes.hpp
+expose LookControl from game/entity/ai/LookControl.hpp
+expose MoveControl from game/entity/ai/MoveControl.hpp
+intercept MoveControl from game/entity/ai/MoveControl.cpp only setWantedPosition,tick
+expose PathFinder from game/core/PathFinder.hpp
+intercept PathFinder from game/core/PathFinder.cpp only findPath
+expose GoalSelector from game/entity/ai/GoalSelector.hpp
+expose GlStateManager from game/core/GlStateManager.hpp
+expose Minecraft from game/core/Minecraft.hpp
+expose GameRenderer from game/client/render/GameRenderer.hpp
+expose LevelRenderer from game/client/render/LevelRenderer.hpp
+expose Gui from game/core/Gui.hpp
+expose MenuPainter from game/ui/UIMenuPainter.hpp
+persistent MenuNavigator
+expose MenuNavigator from game/ui/UIMenuNavigator.hpp
+expose Tesselator from game/client/render/Tesselator.hpp
+expose Font from game/client/render/Font.hpp
+expose ParticleEngine from game/client/render/ParticleEngine.hpp
+expose EntityRenderDispatcher from game/client/render/EntityRenderDispatcher.hpp
+expose ServerLevel from game/server/ServerLevel.hpp
+expose MinecraftServer from game/server/MinecraftServer.hpp
+expose PlayerList from game/world/generation/PlayerList.hpp
+expose BlockEntity from game/world/block/BlockEntity.hpp
+expose Options from game/core/Options.hpp
+expose Inventory from game/item/Inventory.hpp
+expose Recipes from game/item/Recipes.hpp
+expose BufferBuilder from game/core/BufferBuilder.hpp
+override Dimension from game/world/Dimension.hpp,game/world/NormalDimension.hpp to game/world/ModDimension_generated.hpp self Dimension
+expose LevelData from game/world/LevelData.hpp
+intercept DirectoryLevelStorage from game/data/DirectoryLevelStorage.cpp only save,load,loadPlayerDataTag,saveLevelData
+expose PcKeyboardMouse from platform/pc/KeyboardMouse.hpp
+expose CInput from platform/pc/CInput.hpp
+expose Dimension from game/world/Dimension.hpp
+expose UIScene from game/ui/UIScene.hpp
+expose UIScene_HUD from game/ui/UIScene_HUD.hpp
+expose UILayer from game/ui/UILayer.hpp
+expose UIGroup from game/ui/UIGroup.hpp
+expose UIControl from game/ui/UIControl.hpp
+expose UIControl_Base from game/ui/UIControl_Base.hpp
+override UIScene from game/ui/UIScene.hpp to game/ui/ModUIScene_generated.hpp self UIScene
+expose ConsoleUIController from game/core/ConsoleUIController.hpp
+singleton MinecraftServer* gMinecraftServer from game/server/MinecraftServer.hpp
+singleton CInput* g_pInput from platform/pc/CInput.hpp
+singleton ConsoleUIController gConsoleUIController from game/core/ConsoleUIController.hpp
+intercept OverworldLevelSource from game/world/OverworldLevelSource.cpp
+intercept NetherLevelSource from game/world/NetherLevelSource.cpp
+intercept TheEndLevelSource from game/world/TheEndLevelSource.cpp
+expose BiomeProperties from game/world/biome/Biome.hpp
+expose PlainsBiome from game/world/biome/PlainsBiome.hpp
+expose LevelChunk from game/world/chunk/LevelChunk.hpp
+intercept LevelChunk from game/world/chunk/LevelChunk.cpp only -
+expose ChunkPrimer from game/world/chunk/ChunkPrimer.hpp
+intercept ServerPlayerGameMode from game/server/ServerPlayerGameMode.cpp
+intercept PlayerList from game/world/generation/PlayerList.cpp only add,remove
+intercept MinecraftServer from game/server/MinecraftServer.cpp only tick
+intercept Level from game/world/Level.cpp only getSkyColor,getBrightness,addEntity,playSound
+intercept FlatLevelSource from game/world/FlatLevelSource.cpp only createChunk
+expose ServerboundChatPacket from game/network/ServerboundChatPacket.hpp
+intercept ServerGamePacketListenerImpl from game/network/ServerGamePacketListenerImpl.cpp only handleChat,handleCustomPayload
+intercept ConsoleUIController from game/core/ConsoleUIController.cpp only NavigateToScene
+intercept LivingEntity from game/entity/mob/LivingEntity.cpp only hurt,die
+intercept GameRenderer from game/client/render/GameRenderer.cpp only render,renderSnowAndRain,prepareAndRenderClouds,renderWeather
+intercept LevelRenderer from game/client/render/LevelRenderer.cpp only renderSky,renderHaloRing,render,renderEntities,renderDestroyAnimation
+intercept ParticleEngine from game/client/render/ParticleEngine.cpp only render,renderLit
+expose LootTableContext from game/core/LootTableContext.hpp
+expose GameRules from game/core/GameRules.hpp
+intercept LootTable from game/core/LootTable.cpp only fill
+intercept Mob from game/entity/mob/Mob.cpp only dropAllDeathLoot,dropDeathLoot
+expose FishingHook from game/entity/projectile/FishingHook.hpp
+intercept FishingHook from game/entity/projectile/FishingHook.cpp only retrieve
+intercept Gui from game/core/Gui.cpp only render,renderOverlay,renderChatLine
+intercept Minecraft from game/core/Minecraft.cpp only tick
+expose ModScreen from game/core/ModScreen.hpp
+expose ModRegistry from game/core/ModRegistry.hpp
+expose ModBlocks from game/core/ModBlocks.hpp
+expose ModEntities from game/core/ModEntities.hpp
+expose ModRecipes from game/core/ModRecipes.hpp
+expose ModSurface from game/core/ModSurfaces.hpp
+expose ModSurfaces from game/core/ModSurfaces.hpp
+expose ModAudioStream from game/core/ModAudio.hpp
+expose ModAudio from game/core/ModAudio.hpp
+expose GuiInfo from game/core/ModHandles.hpp
+expose WorldInfo from game/core/ModHandles.hpp
+expose ModStrings from game/core/ModStrings.hpp
+expose ModSounds from game/core/ModSounds.hpp
+expose ModFuel from game/core/ModFuel.hpp
+expose ModCreative from game/core/ModCreative.hpp
+alias ModSounds.Declare registry.sound
+alias ModEntities.DeclareModel registry.entity_model
+alias ModBlocks.DeclareModel registry.block_model
+alias ModEntities.DeclareName registry.entity_name
+alias ModEntities.DeclareSpawn registry.entity_spawn
+alias ModStrings.Translate registry.translate
+alias GuiInfo.GetWidth gui.width
+alias GuiInfo.GetHeight gui.height
+alias GuiInfo.Painter gui.painter
+alias GuiInfo.Image gui.image
+alias WorldInfo.CameraX canvas.camera_x
+alias WorldInfo.CameraY canvas.camera_y
+alias WorldInfo.CameraZ canvas.camera_z
+alias WorldInfo.Image canvas.image
+alias WorldInfo.Triangles canvas.triangles
+alias WorldInfo.ColoredTriangles canvas.colored_triangles
+alias ModSounds.Wav sound.decode
+alias ModSurfaces.Create surface.create
+alias ModSurfaces.Decode surface.decode
+alias ModSurface.Width surface.width
+alias ModSurface.Height surface.height
+alias ModSurface.Write surface.write
+alias ModSurface.Read surface.read
+alias ModSurface.Destroy surface.destroy
+alias ModAudio.Open audio.open
+alias ModAudioStream.Queue stream.queue
+alias ModAudioStream.Queued stream.queued
+alias ModAudioStream.Close stream.close
+alias ModEntities.DeclareTexture registry.entity_texture
+alias ModBlocks.DeclareTexture registry.block_texture
+alias ModRegistry.DeclareItemIcon registry.item_icon
+alias ModRegistry.DeclareItem registry.item
+alias ModRegistry.DeclareDimension registry.dimension
+alias ModRegistry.DeclareItemOf registry.item_of
+alias ModBlocks.Declare registry.block
+alias ModBlocks.DeclareKind registry.block_of
+alias ModBlocks.DeclareProperty registry.block_property
+alias ModBlocks.DeclareDrop registry.block_drop
+alias ModBlocks.DeclareInteractive registry.block_interactive
+alias ModBlocks.DeclareRandomTicks registry.block_random_ticks
+alias ModBlocks.DeclarePower registry.block_power
+alias ModBlocks.DeclareRotates registry.block_rotates
+alias ModBlocks.DeclareEntity registry.block_entity
+alias ModBlocks.DeclareShape registry.block_shape
+alias ModBlocks.DeclareFace registry.block_face
+alias ModEntities.Declare registry.entity
+alias ModRecipes.DeclareShaped registry.shaped
+alias ModRecipes.DeclareShapeless registry.shapeless
+alias ModRecipes.DeclareSmelting registry.smelting
+alias ModFuel.Declare registry.fuel
+alias ModCreative.Declare registry.creative
+intercept ModScreen from game/core/ModScreen.cpp only Draw,Input
+intercept ChatScreen from game/core/ChatScreen.cpp only Pointer
+intercept Item from game/item/Item.cpp only staticCtor
+expose UIScene_CustomMenu from game/ui/UIScene_CustomMenu.hpp
+intercept UIScene_CustomMenu from game/ui/UIScene_CustomMenu.cpp only handlePress,handleCheckboxElementToggled,handleSliderElementMove
+expose UICustomMenuPage from game/ui/UICustomMenuPage.hpp
+expose UIMenuPage from game/ui/UIMenuPage.hpp
+intercept UIMoreOptionsPage from game/ui/UIMoreOptionsPage.cpp only Build
+expose UIMoreOptionsPage from game/ui/UIMoreOptionsPage.hpp
+intercept Entity from game/entity/mob/Entity.cpp only -
+intercept ScriptedGoal from game/entity/ai/ScriptedGoal.cpp
+expose ScriptedGoal from game/entity/ai/ScriptedGoal.hpp
+family ScriptedBlockEntity of BlockEntity
+family ScriptedBlock of Block
+expose ScriptedBlock from game/world/block/ScriptedBlock.hpp
+expose ScriptedBlockEntity from game/world/block/ScriptedBlockEntity.hpp
+intercept ScriptedBlockEntity from game/world/block/ScriptedBlockEntity.cpp only tick
+intercept BlockEntity from game/world/block/BlockEntity.cpp only -
+intercept BiomeInitLayer from game/world/biome/BiomeInitLayer.cpp only getArea
+intercept Biome from game/world/biome/Biome.cpp only -
+intercept ScriptedSoundEngine from game/client/audio/ScriptedSoundEngine.cpp only tick
+
+mobbase pig PIG Pig from game/core/Pig.hpp
+mobbase cow COW Cow from game/core/Cow.hpp
+mobbase chicken CHICKEN Chicken from game/core/Chicken.hpp
+mobbase sheep SHEEP Sheep from game/core/Sheep.hpp
+mobbase zombie ZOMBIE Zombie from game/entity/mob/Zombie.hpp
+mobbase skeleton SKELETON Skeleton from game/entity/mob/Skeleton.hpp
+mobbase spider SPIDER Spider from game/core/Spider.hpp
+mobbase creeper CREEPER Creeper from game/core/Creeper.hpp

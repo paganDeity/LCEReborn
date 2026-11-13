@@ -1,0 +1,3 @@
+greeting = "Hello"
+loud = false
+repeats = 2

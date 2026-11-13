@@ -1,0 +1,6 @@
+id=entities
+name=Entities
+version=1.0
+api=1
+depends=lcestd
+entry=main.lua

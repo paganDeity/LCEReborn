@@ -1,0 +1,365 @@
+{
+ "description": "1.14 time units and teleport rotation and facing",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "time set 1d"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is [01]?\\d?$"
+  },
+  {
+   "cmd": "time set 6000t"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is 600\\d$"
+  },
+  {
+   "cmd": "time add 10s"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is 62\\d\\d$"
+  },
+  {
+   "cmd": "time set 0.5d"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is 1200\\d$"
+  },
+  {
+   "cmd": "tp @p ~ ~ ~ 90 10",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "data get entity @p Rotation[0]",
+   "expect": "90"
+  },
+  {
+   "cmd": "data get entity @p Rotation[1]",
+   "expect": "10"
+  },
+  {
+   "cmd": "tp @p ~ ~ ~ ~45 ~",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "data get entity @p Rotation[0]",
+   "expect": "135"
+  },
+  {
+   "cmd": "tp @p 0 100 0 facing 0 100 10",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "data get entity @p Rotation[0]",
+   "expect": "0"
+  },
+  {
+   "cmd": "tp @p 0 100 0 facing 10 100 0",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "data get entity @p Rotation[0]",
+   "expect": "-9\\d"
+  },
+  {
+   "cmd": "tp @p ~ ~ ~ facing entity @p eyes",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "tp @p 48.5 105 256.5",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "setblock 48 100 256 stone",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "setblock 49 100 256 stone",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "setblock 48 100 258 stone",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "setblock 49 100 258 stone",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "execute if block 48 100 256 stone",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute unless block 48 100 256 dirt",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute if block 48 100 256 dirt",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "execute positioned 48.7 100.9 256.2 align xyz if block ~ ~ ~ stone",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute positioned 48.7 100.9 256.2 align xyz if block ~1 ~ ~ stone",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute positioned 48.7 100.9 256.2 align xyz if block ~2 ~ ~ stone",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "execute if blocks 48 100 256 49 100 256 48 100 258 all",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "setblock 49 100 258 dirt",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "execute if blocks 48 100 256 49 100 256 48 100 258 all",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "execute if blocks 48 100 256 49 100 256 48 100 258 masked",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "execute in overworld if block 48 100 256 stone",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute rotated 90 0 positioned ^ ^ ^2 run say rotated ok",
+   "expect": "rotated ok"
+  },
+  {
+   "cmd": "execute facing 0 100 256 positioned ^ ^ ^1 run say facing works",
+   "expect": "facing works"
+  },
+  {
+   "cmd": "summon pig 48 101 256 {NoAI:1b,Tags:[\"probe\"]}",
+   "expect": "successfully summoned"
+  },
+  {
+   "cmd": "execute if data entity @e[tag=probe,limit=1] Tags",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute unless data entity @e[tag=probe,limit=1] Missing",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "kill @e[tag=probe]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "fill 48 100 256 49 100 258 air",
+   "expect": "placed|filled|Changed"
+  },
+  {
+   "cmd": "particle heart ~ ~1 ~ 0.5 0.5 0.5 0 10",
+   "expect": "Displaying heart"
+  },
+  {
+   "cmd": "particle nosuch",
+   "expect_error": "Unknown particle nosuch"
+  },
+  {
+   "cmd": "particle blockcrack",
+   "expect_error": "needs a block or an item"
+  },
+  {
+   "cmd": "tp @p 316 152 290"
+  },
+  {
+   "wait": 60
+  },
+  {
+   "cmd": "fill 300 150 300 302 151 302 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 310 150 300 312 151 302 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 330 150 300 332 151 302 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 300 150 300 302 150 302 stone",
+   "expect": "9 blocks filled"
+  },
+  {
+   "cmd": "setblock 301 151 301 chest{Items:[{Slot:0b,id:\"minecraft:diamond\",Count:3b}]}",
+   "expect": "placed"
+  },
+  {
+   "cmd": "clone 300 150 300 302 151 302 310 150 300",
+   "expect": "10 blocks cloned"
+  },
+  {
+   "cmd": "data get block 311 151 301 Items[0].Count",
+   "expect": ": 3b$"
+  },
+  {
+   "cmd": "clone 300 150 300 302 151 302 301 150 300",
+   "expect_error": "cannot overlap"
+  },
+  {
+   "cmd": "clone 310 150 300 312 151 302 330 150 300 replace move",
+   "expect": "cloned"
+  },
+  {
+   "cmd": "data get block 311 151 301",
+   "expect_error": "no data"
+  },
+  {
+   "cmd": "data get block 331 151 301 Items[0].id",
+   "expect": "diamond"
+  },
+  {
+   "cmd": "clone 300 150 300 302 151 302 0 300 0",
+   "expect_error": "outside of the world"
+  },
+  {
+   "cmd": "playsound mob.pig.idle neutral @a 10000 64 10000 1 1 0.5",
+   "expect": "Played sound mob.pig.idle to 1 player"
+  },
+  {
+   "cmd": "playsound mob.pig.idle neutral @a 10000 64 10000",
+   "expect_error": "too far away"
+  },
+  {
+   "cmd": "playsound nosuch neutral @a",
+   "expect_error": "Unknown sound nosuch"
+  },
+  {
+   "cmd": "locate village",
+   "expect": "The nearest village is at \\[-?[0-9]+, ~, -?[0-9]+\\] \\([0-9]+ blocks away\\)"
+  },
+  {
+   "cmd": "locate castle",
+   "expect_error": "Usage: /locate"
+  },
+  {
+   "cmd": "summon cow 316 152 290 {Tags:[\"spread\"]}",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "summon cow 316 152 290 {Tags:[\"spread\"]}",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "spreadplayers 316 290 5 30 false @e[tag=spread]",
+   "expect": "Spread 2 entities around 316, 290"
+  },
+  {
+   "cmd": "spreadplayers 316 290 5 30 true @e[tag=spread]",
+   "expect_error": "no teams"
+  },
+  {
+   "cmd": "spreadplayers 316 290 50 10 false @e[tag=spread]",
+   "expect_error": "spread distance"
+  },
+  {
+   "cmd": "kill @e[tag=spread]",
+   "allow_error": true
+  },
+  {
+   "cmd": "bossbar remove scenario",
+   "allow_error": true
+  },
+  {
+   "cmd": "bossbar add scenario \"Scenario bar\"",
+   "expect": "Created custom bossbar \\[Scenario bar\\]"
+  },
+  {
+   "cmd": "bossbar add scenario again",
+   "expect_error": "already exists"
+  },
+  {
+   "cmd": "bossbar set scenario players @a",
+   "expect": "now has 1 player"
+  },
+  {
+   "cmd": "bossbar set scenario value 40",
+   "expect": "changed value to 40"
+  },
+  {
+   "cmd": "bossbar set scenario max 0",
+   "expect_error": "maximum must be"
+  },
+  {
+   "cmd": "bossbar get scenario value",
+   "expect": "has a value of 40"
+  },
+  {
+   "cmd": "bossbar list",
+   "expect": "\\[Scenario bar\\]"
+  },
+  {
+   "cmd": "bossbar remove scenario",
+   "expect": "Removed custom bossbar"
+  },
+  {
+   "cmd": "bossbar get scenario value",
+   "expect_error": "No bossbar exists"
+  },
+  {
+   "cmd": "data merge storage scenario {a:1,b:{c:\"x\"}}",
+   "expect": "Storage minecraft:scenario merged"
+  },
+  {
+   "cmd": "data get storage scenario b.c",
+   "expect": ": \"x\"$"
+  },
+  {
+   "cmd": "data modify storage scenario copy set from storage scenario b",
+   "expect": "modified"
+  },
+  {
+   "cmd": "data get storage scenario copy.c",
+   "expect": ": \"x\"$"
+  },
+  {
+   "cmd": "data remove storage scenario a",
+   "expect": "removed 1 value"
+  },
+  {
+   "cmd": "data remove storage scenario b",
+   "allow_error": true
+  },
+  {
+   "cmd": "data remove storage scenario copy",
+   "allow_error": true
+  }
+ ]
+}

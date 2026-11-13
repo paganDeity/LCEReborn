@@ -1,0 +1,6 @@
+#ifndef PLATFORM_PC_PCP2PSTART_HPP
+#define PLATFORM_PC_PCP2PSTART_HPP
+
+void PcP2pStart();
+
+#endif

@@ -1,0 +1,104 @@
+{
+ "description": "the whitelist, ban and operator lists in a game hosted from the client: add, list, remove, and the errors for a repeat",
+ "world": {
+  "seed": "access",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "whitelist add scenario_friend",
+   "expect": "is kept by their UUID"
+  },
+  {
+   "cmd": "whitelist add scenario_friend",
+   "expect_error": "already on the whitelist"
+  },
+  {
+   "cmd": "whitelist list",
+   "expect": "scenario_friend"
+  },
+  {
+   "cmd": "whitelist remove scenario_friend",
+   "expect": "Removed scenario_friend"
+  },
+  {
+   "cmd": "whitelist remove scenario_friend",
+   "expect_error": "is not on the whitelist"
+  },
+  {
+   "cmd": "ban scenario_griefer for testing",
+   "expect": "is kept by their UUID"
+  },
+  {
+   "cmd": "ban scenario_griefer",
+   "expect_error": "already banned"
+  },
+  {
+   "cmd": "banlist",
+   "expect": "scenario_griefer: for testing"
+  },
+  {
+   "cmd": "pardon scenario_griefer",
+   "expect": "Pardoned scenario_griefer"
+  },
+  {
+   "cmd": "pardon scenario_griefer",
+   "expect_error": "is not banned"
+  },
+  {
+   "cmd": "op scenario_helper",
+   "expect": "is made the operator"
+  },
+  {
+   "cmd": "deop scenario_helper",
+   "expect": "no longer a server operator"
+  },
+  {
+   "cmd": "deop scenario_helper",
+   "expect_error": "not an operator"
+  },
+  {
+   "cmd": "ban-ip 203.0.113.7 a documentation address",
+   "expect": "Banned the address 203.0.113.7"
+  },
+  {
+   "cmd": "ban-ip 203.0.113.7",
+   "expect_error": "already banned"
+  },
+  {
+   "cmd": "ban-ip not.an.address",
+   "expect_error": "is not an address"
+  },
+  {
+   "cmd": "banlist ips",
+   "expect": "203.0.113.7: a documentation address"
+  },
+  {
+   "cmd": "pardon-ip 203.0.113.7",
+   "expect": "Pardoned the address"
+  },
+  {
+   "cmd": "pardon-ip 203.0.113.7",
+   "expect_error": "is not a banned address"
+  },
+  {
+   "cmd": "save-all",
+   "expect": "Saving the game"
+  },
+  {
+   "wait": 60
+  },
+  {
+   "cmd": "stop",
+   "expect_error": "Exit Game"
+  },
+  {
+   "cmd": "save-off",
+   "expect": "Automatic saving is now off"
+  },
+  {
+   "cmd": "save-on",
+   "expect": "Automatic saving is now on"
+  }
+ ]
+}

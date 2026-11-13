@@ -1,0 +1,6 @@
+id=data
+name=Saved data
+version=1.0
+api=1
+entry=main.lua
+depends=lcestd

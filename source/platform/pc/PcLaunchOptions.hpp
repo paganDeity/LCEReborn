@@ -1,0 +1,61 @@
+#ifndef PLATFORM_PC_PCLAUNCHOPTIONS_HPP
+#define PLATFORM_PC_PCLAUNCHOPTIONS_HPP
+
+#include <string>
+#if LCE_DEBUG_BUILD
+#include <vector>
+#endif
+
+enum class PcProgram
+{
+    Game,
+    Server
+};
+
+struct PcLaunchOptions
+{
+    std::string username;
+    std::string contentDir;
+    std::string saveDir;
+    std::string packsDir;
+    std::string resourceDir;
+    std::string language;
+    std::string logDir;
+    int logKeepDays = 30;
+    std::string uuid;
+    std::string world;
+    std::string seed;
+    std::string gameMode;
+    std::string join;
+    std::string protocol;
+    std::string p2pServer;
+    std::string p2pServerKey;
+    std::string p2pDir;
+    std::string identityDir;
+    std::string modsDir;
+    std::string commandLimits;
+    std::string discordApp;
+    std::string profiles;
+    std::string uiMode;
+#if LCE_DEBUG_BUILD
+    std::vector<double> position;
+    std::vector<double> rotation;
+    std::vector<double> renderSize;
+    std::string captureDir = "capture";
+    int captureFrames = 0;
+    double captureDelay = 10.0;
+    int debugPort = 0;
+    int debugIdleQuit = 0;
+    int frameRate = 0;
+    bool skipIntro = false;
+    std::string hints;
+#endif
+    bool splitScreen = true;
+    bool joinPrompt = false;
+    bool cheats = false;
+};
+
+bool PcParseLaunchOptions(int argc, char** argv, int& exitCode, PcProgram program);
+const PcLaunchOptions& PcGetLaunchOptions();
+
+#endif

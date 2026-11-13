@@ -1,0 +1,132 @@
+{
+ "description": "Command blocks: impulse triggered by redstone, a chain with a failing block, and conditional blocks",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "tp @p 48.5 105 256.5",
+   "expect": "Teleported"
+  },
+  {
+   "cmd": "time query daytime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "setblock 40 100 250 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "fill 40 100 250 60 100 270 air",
+   "expect": "filled"
+  },
+  {
+   "cmd": "setblock 48 100 256 command_block{Command:\"setblock 48 100 262 gold_block\"} 3",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 48 100 257 chain_command_block{Command:\"setblock 48 100 263 iron_block\",auto:1b} 3",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 48 100 258 chain_command_block{Command:\"setblock 48 100 264 diamond_block\",auto:1b} 11",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 48 100 259 chain_command_block{Command:\"nosuchcommand\",auto:1b} 3",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 48 100 260 chain_command_block{Command:\"setblock 48 100 265 emerald_block\",auto:1b} 11",
+   "expect": "placed"
+  },
+  {
+   "cmd": "execute if block 48 100 262 gold_block",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "setblock 47 100 256 redstone_block",
+   "expect": "placed"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "execute if block 48 100 262 gold_block",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute if block 48 100 263 iron_block",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute if block 48 100 264 diamond_block",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "execute if block 48 100 265 emerald_block",
+   "expect_error": "Test failed"
+  },
+  {
+   "cmd": "data get block 48 100 256 SuccessCount",
+   "expect": "1"
+  },
+  {
+   "cmd": "data get block 48 100 259 SuccessCount",
+   "expect": "0"
+  },
+  {
+   "cmd": "data get block 48 100 260 SuccessCount",
+   "expect": "0"
+  },
+  {
+   "cmd": "data get block 48 100 256 LastOutput",
+   "expect": "placed|Block"
+  },
+  {
+   "cmd": "setblock 52 100 256 repeating_command_block{Command:\"setblock 52 100 258 gold_block\",auto:1b} 3",
+   "expect": "placed"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "execute if block 52 100 258 gold_block",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "setblock 52 100 258 air",
+   "expect": "placed"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "time query gametime",
+   "expect": "The time is"
+  },
+  {
+   "cmd": "execute if block 52 100 258 gold_block",
+   "expect": "Test passed"
+  },
+  {
+   "cmd": "fill 40 100 250 60 100 270 air"
+  }
+ ]
+}

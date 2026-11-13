@@ -1,0 +1,5 @@
+id=kinds
+name=Block kinds
+version=1.0
+api=1
+entry=main.lua

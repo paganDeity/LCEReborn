@@ -1,0 +1,5 @@
+id=hello
+name=Hello
+version=1.0
+api=1
+entry=main.lua

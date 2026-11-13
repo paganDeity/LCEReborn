@@ -1,0 +1,32 @@
+{
+  "description": "NBT paths index byte and int arrays, set, insert and remove their elements, and insert several values in order",
+  "world": {"seed": "12345", "mode": "creative"},
+  "steps": [
+    {"cmd": "setblock 56 100 263 chest{Items:[{Slot:0b,id:\"minecraft:stone\",Count:1b,tag:{B:[B;1b,2b,3b],I:[I;10,20,30]}}]} 0 replace", "expect": "Block placed"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.B[0]", "expect": ": 1b$"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I[-1]", "expect": ": 30$"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I[]", "expect_error": "more than one value"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I[5]", "expect_error": "found no data"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.I[1] set value 25", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I", "expect": ": \\[I;10,25,30\\]$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.I[] set value 7", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I", "expect": ": \\[I;7,7,7\\]$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B[0] set value \"x\"", "expect_error": "must be set to a number"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B append value 4b", "expect": "modified"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B prepend value 0b", "expect": "modified"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B insert 2 value 9b", "expect": "modified"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B insert -1 value 5b", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.B", "expect": ": \\[B;0b,1b,9b,2b,3b,4b,5b\\]$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.B insert 9 value 1b", "expect_error": "out of range"},
+    {"cmd": "data remove block 56 100 263 Items[0].tag.B[0]", "expect": "removed 1 value"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.B", "expect": ": \\[B;1b,9b,2b,3b,4b,5b\\]$"},
+    {"cmd": "data remove block 56 100 263 Items[0].tag.I[]", "expect": "removed 3 values"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I", "expect": ": \\[I;\\]$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.L set value [\"a\",\"b\"]", "expect": "modified"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.L insert 0 from block 56 100 263 Items[0].tag.L", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.L", "expect": ": \\[\"a\",\"b\",\"a\",\"b\"\\]$"},
+    {"cmd": "data modify block 56 100 263 Items[0].tag.I append from block 56 100 263 Items[0].tag.B", "expect": "modified"},
+    {"cmd": "data get block 56 100 263 Items[0].tag.I", "expect": ": \\[I;1,9,2,3,4,5\\]$"},
+    {"cmd": "setblock 56 100 263 air 0 replace", "expect": "Block placed"}
+  ]
+}

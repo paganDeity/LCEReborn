@@ -1,0 +1,6 @@
+id=uidemo
+name=Widget demo
+version=1.0
+api=1
+entry=main.lua
+depends=widgets

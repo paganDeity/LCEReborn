@@ -1,0 +1,72 @@
+{
+ "description": "Long arrays parse, print, index and edit; the world records the capability and the Legacy wire leaves them out",
+ "world": {
+  "seed": "longarrays",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "setblock ~ ~10 ~ chest{Items:[{Slot:0b,id:\"minecraft:stone\",Count:1b,tag:{Q:[L;1L,2L,3L]}}]} 0 replace",
+   "expect": "Block placed"
+  },
+  {
+   "cmd": "data get block ~ ~10 ~ Items[0].tag.Q",
+   "expect": ": \\[L;1L,2L,3L\\]$"
+  },
+  {
+   "cmd": "data get block ~ ~10 ~ Items[0].tag.Q[1]",
+   "expect": ": 2L$"
+  },
+  {
+   "cmd": "data modify block ~ ~10 ~ Items[0].tag.Q[0] set value 9",
+   "expect": "modified"
+  },
+  {
+   "cmd": "data modify block ~ ~10 ~ Items[0].tag.Q append value 4b",
+   "expect": "modified"
+  },
+  {
+   "cmd": "data get block ~ ~10 ~ Items[0].tag.Q",
+   "expect": ": \\[L;9L,2L,3L,4L\\]$"
+  },
+  {
+   "cmd": "data remove block ~ ~10 ~ Items[0].tag.Q[-1]",
+   "expect": "removed 1 value"
+  },
+  {
+   "cmd": "data get block ~ ~10 ~ Items[0].tag.Q",
+   "expect": ": \\[L;9L,2L,3L\\]$"
+  },
+  {
+   "state": "level.nbtCapabilities",
+   "equals": 1
+  },
+  {
+   "cmd": "give @p stone{Q:[L;5L],K:1b} 1",
+   "expect": "^Given"
+  },
+  {
+   "wait": 10
+  },
+  {
+   "cmd": "data get entity @p Inventory[{id:\"minecraft:stone\"}].tag.Q",
+   "expect": ": \\[L;5L\\]$"
+  },
+  {
+   "client": "Inventory[{id:\"minecraft:stone\"}].tag",
+   "expect": "^\\{K:1b\\}$"
+  },
+  {
+   "client": "Inventory[{id:\"minecraft:stone\"}].tag.Q",
+   "expect_error": "found no data"
+  },
+  {
+   "cmd": "clear @p stone",
+   "expect": ""
+  },
+  {
+   "cmd": "setblock ~ ~10 ~ air 0 replace",
+   "expect": "Block placed"
+  }
+ ]
+}

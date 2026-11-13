@@ -1,0 +1,6 @@
+id=blocks
+name=Block examples
+version=1.0
+api=1
+entry=main.lua
+depends=lcestd

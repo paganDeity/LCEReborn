@@ -1,0 +1,6 @@
+id={{id}}
+name={{name}}
+version=0.1.0
+api=1
+entry=main.lua
+depends=lcestd

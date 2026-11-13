@@ -1,0 +1,496 @@
+{
+ "description": "The example mods in a running game: registry, derived content, mod blocks with a store, network channel, saved data, translations, a model, commands with usage",
+ "mods": [
+  "blocks",
+  "kinds",
+  "network",
+  "config",
+  "lang",
+  "model",
+  "data",
+  "hello",
+  "dimension",
+  "lootwatch",
+  "entities",
+  "events",
+  "keys"
+ ],
+ "world": {
+  "seed": "11",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "setblock 262 160 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 160 244 blocks:crate",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 161 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 161 244 blocks:counter",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 258 162 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 258 162 244 kinds:ruby_door",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 258 163 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 258 163 244 kinds:oak_ruby_door",
+   "expect": "placed"
+  },
+  {
+   "cmd": "give @p lang:ruby 1",
+   "expect": "Given \\[Ruby \\(english\\)\\]"
+  },
+  {
+   "cmd": "summon model:critter2 ~ ~ ~",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "kill @e[type=model:critter2]",
+   "expect": "Killed"
+  },
+  {
+   "cmd": "greet",
+   "expect": "Hello, Server"
+  },
+  {
+   "cmd": "hello",
+   "expect": "Hello Server"
+  },
+  {
+   "cmd": "help hello",
+   "expect": "/hello"
+  },
+  {
+   "cmd": "netsend",
+   "expect": "sent"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "cmd": "netlog",
+   "expect": "client got 7 bytes.*server got pong"
+  },
+  {
+   "cmd": "data get block 262 161 244",
+   "expect": "Values"
+  },
+  {
+   "mods": "list",
+   "expect": "\"id\": \"dimension\".*\"name\": \"Dimension\".*\"state\": \"running\".*\"version\": \"1.0\""
+  },
+  {
+   "cmd": "execute as @p run enter 5"
+  },
+  {
+   "wait": 120
+  },
+  {
+   "state": "player.dimension",
+   "equals": "dimension_hollow"
+  },
+  {
+   "cmd": "execute as @a run enter 0"
+  },
+  {
+   "wait": 120
+  },
+  {
+   "state": "player.dimension",
+   "equals": "Overworld"
+  },
+  {
+   "cmd": "tp @p 262.5 142 244.5 0 90"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 chest{LootTable:\"chests/simple_dungeon\"}",
+   "expect": "placed"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "chestitems",
+   "expect": "items [1-9]"
+  },
+  {
+   "cmd": "lootcount",
+   "expect": "fills [1-9]"
+  },
+  {
+   "cmd": "summon cow 262 150 244",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "effect @e[type=cow] instant_damage 1 20"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "lootcount",
+   "expect": "drops [1-9]"
+  },
+  {
+   "cmd": "kill @e[type=item]",
+   "allow_error": true
+  },
+  {
+   "cmd": "lootcancel on",
+   "expect": "cancelled"
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 chest{LootTable:\"chests/simple_dungeon\"}",
+   "expect": "placed"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "chestitems",
+   "expect": "items 0$"
+  },
+  {
+   "cmd": "lootcancel off",
+   "expect": "allowed"
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 chest{LootTable:\"chests/simple_dungeon\"}",
+   "expect": "placed"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "chestitems",
+   "expect": "items [1-9]"
+  },
+  {
+   "cmd": "lootcancel on",
+   "expect": "cancelled"
+  },
+  {
+   "cmd": "summon cow 263 150 244",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "effect @e[type=cow] instant_damage 1 20"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "cmd": "kill @e[type=item,x=263,y=150,z=244,distance=..8]",
+   "expect_error": "No entity was found"
+  },
+  {
+   "cmd": "lootcancel off",
+   "expect": "allowed"
+  },
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 260 140 245 264 140 252 stone",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 260 141 245 264 141 252 water",
+   "allow_error": true
+  },
+  {
+   "cmd": "gamemode survival @p"
+  },
+  {
+   "cmd": "give @p fishing_rod 1"
+  },
+  {
+   "key": "1"
+  },
+  {
+   "cmd": "execute as @p run handslots"
+  },
+  {
+   "cmd": "lasthands",
+   "expect": "hands slots 2 main 1$"
+  },
+  {
+   "cmd": "tp @p 262.5 142 244.5 0 30"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "key": "1"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 20
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "lootcount",
+   "expect": "catches [1-9]"
+  },
+  {
+   "cmd": "lootreset",
+   "expect": "reset"
+  },
+  {
+   "cmd": "lootcancel on",
+   "expect": "cancelled"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 10
+  },
+  {
+   "cmd": "execute as @p run bobber"
+  },
+  {
+   "cmd": "lastbobber",
+   "expect": "bobber set"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 10
+  },
+  {
+   "cmd": "execute as @p run bobber"
+  },
+  {
+   "cmd": "lastbobber",
+   "expect": "bobber set"
+  },
+  {
+   "cmd": "lootcount",
+   "expect": "catches [1-9]"
+  },
+  {
+   "cmd": "lootcancel off",
+   "expect": "allowed"
+  },
+  {
+   "cmd": "gamemode creative @p"
+  },
+  {
+   "cmd": "fill 260 141 245 264 141 252 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 260 140 245 264 140 252 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "summon cow 262 150 244",
+   "expect": "summoned"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "ents",
+   "expect": "cow=[1-9]"
+  },
+  {
+   "cmd": "entsnear",
+   "expect": "player=1"
+  },
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "tp @p 262.5 142 244.5 0 90"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "key": "MouseLeft"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "eventcount",
+   "expect": "destroy [1-9]"
+  },
+  {
+   "cmd": "setblock 262 141 244 minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 143 246 minecraft:air",
+   "allow_error": true
+  },
+  {
+   "cmd": "setblock 262 143 245 minecraft:air",
+   "allow_error": true
+  },
+  {
+   "cmd": "setblock 262 142 245 minecraft:air",
+   "allow_error": true
+  },
+  {
+   "cmd": "setblock 262 142 246 minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock 262 142 246 minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "kill @e[type=item]",
+   "allow_error": true
+  },
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "give @p minecraft:planks 4",
+   "expect": "Given"
+  },
+  {
+   "cmd": "tp @p 262.5 142 244.5 0 35"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "key": "1"
+  },
+  {
+   "key": "MouseRight",
+   "ticks": 1
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "eventcount",
+   "expect": "useon [1-9]"
+  },
+  {
+   "cmd": "summon minecraft:cow 262 150 244",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "effect @e[type=cow] instant_damage 1 20"
+  },
+  {
+   "wait": 40
+  },
+  {
+   "cmd": "eventcount",
+   "expect": "hurt [1-9]\\d* die [1-9]"
+  },
+  {
+   "key": "t"
+  },
+  {
+   "wait": 10
+  },
+  {
+   "type": "hello from the events scenario"
+  },
+  {
+   "key": "Return"
+  },
+  {
+   "wait": 20
+  },
+  {
+   "cmd": "eventcount",
+   "expect": "chat [1-9]"
+  },
+  {
+   "key": "g"
+  },
+  {
+   "wait": 10
+  },
+  {
+   "cmd": "presses",
+   "expect": "^[1-9]"
+  }
+ ]
+}

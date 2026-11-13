@@ -1,0 +1,5 @@
+id=navigator
+name=Menu navigator
+version=1.0
+api=1
+entry=main.lua

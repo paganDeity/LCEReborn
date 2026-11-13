@@ -1,0 +1,61 @@
+{
+ "description": "/replaceitem on a player's slots and a chest's slot, and /clear with armour worn (it crashed on the armour slots)",
+ "world": {
+  "seed": "12345",
+  "mode": "creative"
+ },
+ "steps": [
+  {
+   "cmd": "clear @p",
+   "allow_error": true
+  },
+  {
+   "cmd": "replaceitem entity @p slot.hotbar.3 minecraft:diamond_sword",
+   "expect": "Replaced a slot on .* with \\[Diamond Sword\\]"
+  },
+  {
+   "cmd": "replaceitem entity @p slot.armor.head minecraft:iron_helmet",
+   "expect": "Iron Helmet"
+  },
+  {
+   "cmd": "replaceitem entity @p slot.weapon.mainhand minecraft:stick 5",
+   "expect": "Stick"
+  },
+  {
+   "cmd": "clear @p minecraft:iron_helmet",
+   "expect": "removing 1 item"
+  },
+  {
+   "cmd": "clear @p minecraft:stick",
+   "expect": "removing 5 items"
+  },
+  {
+   "cmd": "replaceitem entity @p slot.bogus.1 minecraft:stick",
+   "expect_error": "No player with that slot"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:glass",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:stone",
+   "expect": "placed"
+  },
+  {
+   "cmd": "setblock ~ ~3 ~ minecraft:chest",
+   "expect": "placed"
+  },
+  {
+   "cmd": "replaceitem block ~ ~3 ~ slot.container.5 minecraft:apple 7",
+   "expect": "Replaced a slot at"
+  },
+  {
+   "cmd": "data get block ~ ~3 ~ Items",
+   "expect": "Count:7b,id:\"minecraft:apple\".*Slot:5b"
+  },
+  {
+   "cmd": "replaceitem block ~ ~3 ~ slot.container.99 minecraft:apple",
+   "expect_error": "no such slot"
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "description": "a mod sees each path search with the mob and its target (PathFinder_findPath_2 to _4), and answering every search with no path keeps the mobs where they are once the paths they were already walking end",
+ "mods": [
+  "pathwatch"
+ ],
+ "steps": [
+  {
+   "wait": 100
+  },
+  {
+   "cmd": "kill @e[type=!player]",
+   "allow_error": true
+  },
+  {
+   "wait": 5
+  },
+  {
+   "cmd": "fill 250 140 250 270 140 270 grass",
+   "allow_error": true
+  },
+  {
+   "cmd": "fill 250 141 250 270 143 270 air",
+   "allow_error": true
+  },
+  {
+   "cmd": "tp @p 260 141 245"
+  },
+  {
+   "cmd": "pathcancel off",
+   "expect": "allowed"
+  },
+  {
+   "cmd": "summon cow 258 141 258",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "summon cow 262 141 262",
+   "expect": "summoned"
+  },
+  {
+   "cmd": "summon cow 260 141 255",
+   "expect": "summoned"
+  },
+  {
+   "wait": 400
+  },
+  {
+   "cmd": "pathcount",
+   "expect": "searches [1-9][0-9]* cancelled 0 last minecraft:\\w+ to "
+  },
+  {
+   "cmd": "pathcancel on",
+   "expect": "cancelled"
+  },
+  {
+   "wait": 300
+  },
+  {
+   "cmd": "cowsmoved mark",
+   "expect": "marked"
+  },
+  {
+   "wait": 400
+  },
+  {
+   "cmd": "pathcount",
+   "expect": "searches ([1-9][0-9]*) cancelled \\1 last minecraft:\\w+ to "
+  },
+  {
+   "cmd": "cowsmoved",
+   "expect": "moved [01]$"
+  },
+  {
+   "cmd": "pathcancel off",
+   "expect": "allowed"
+  },
+  {
+   "cmd": "kill @e[type=cow]",
+   "allow_error": true
+  }
+ ]
+}
