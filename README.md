@@ -16,17 +16,9 @@ hand class families to Luna and Opus 5 workers. See `docs/overview.md`.
 
 ## Playing on PC
 
-1. Download the package for your system from the latest
-   [release](https://github.com/LCEReborn/LCEReborn/releases/latest). On
-   64-bit Windows, extract the zip anywhere; it needs the Microsoft Visual
-   C++ Redistributable most PCs already have. On 64-bit Linux, make the
-   AppImage executable and run it, or extract the tar.gz (its README lists
-   what Linux needs).
-2. Run `LCERebornLauncher` and point its setup at your own dumps of the
-   base game and update 688. It imports the game's content beside itself on
-   Windows and into `~/.local/share/LCEReborn` on Linux; nothing is
-   downloaded.
-3. Pick a profile and press Play.
+1. Dump a legally-owned disc of the game
+2. Prepare the copy using tools/prepare.py
+3. Using cmake, compile the game and run it
 
 The PC version runs in a window of any shape or borderless fullscreen, with
 keyboard and mouse, a touchscreen or controllers, split screen, render distance
